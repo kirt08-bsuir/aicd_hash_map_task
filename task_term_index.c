@@ -206,6 +206,164 @@ int hash_table_insert_sub_sub_term(
     return 0;
 }
 
+int hash_table_edit_term(
+    HashTable *map,
+    const char *term_name,
+    const unsigned short *new_pages,
+    short new_pages_count
+) {
+    if (map == NULL) return -1;
+
+    unsigned int index = _hash_function(term_name, map->size);
+
+    Term *term = map->entries[index];
+    while (term) {
+        if (strcmp(term_name, term->name) == 0) break;
+        term = term->next;
+    }
+
+    if (term == NULL) {
+        printf("Error: term '%s' not found\n", term_name);
+        return -1;
+    }
+
+    if (term->pages) free(term->pages);
+
+    term->pages = malloc(new_pages_count * sizeof(unsigned short));
+    if (term->pages == NULL) {
+        printf("Error: memory allocation failed\n");
+        term->pages = NULL;
+        term->pages_count = 0;
+        return -1;
+    }
+    memcpy(term->pages, new_pages, new_pages_count * sizeof(unsigned short));
+    term->pages_count = new_pages_count;
+    printf("Term '%s' successfully edited\n", term_name);
+    return 0;
+}
+
+int hash_table_edit_sub_termin(
+    HashTable *map,
+    const char *term_name,
+    const char *sub_term_name,
+    const unsigned short *new_pages,
+    short new_pages_count
+) {
+    if (map == NULL) return -1;
+
+    unsigned int index = _hash_function(term_name, map->size);
+
+    Term *term = map->entries[index];
+    while (term) {
+        if (strcmp(term->name, term_name) == 0) break;
+        term = term->next;
+    }
+
+    if (term == NULL) {
+        printf("Error: term '%s' not found\n", term_name);
+        return -1;
+    }
+
+    SubTerm *sub_term = term->sub_list;
+    while (sub_term) {
+        if (strcmp(sub_term->name, sub_term_name) == 0) break;
+        sub_term = sub_term->next;
+    }
+
+    if (sub_term == NULL) {
+        printf("Error: subterm '%s' not found in term '%s'\n", sub_term_name, term_name);
+        return -1;
+    }
+
+    if (sub_term->pages) free(sub_term->pages);
+
+    sub_term->pages = malloc(new_pages_count * sizeof(unsigned short));
+    if (sub_term->pages == NULL) {
+        printf("Error: memory allocation failed\n");
+        sub_term->pages = NULL;
+        sub_term->pages_count = 0;
+        return -1;
+    }
+    memcpy(sub_term->pages, new_pages, new_pages_count * sizeof(unsigned short));
+    sub_term->pages_count = new_pages_count;
+
+    printf("Subterm '%s' in term '%s' successfully edited\n", sub_term_name, term_name);
+    return 0;
+}
+
+int hash_table_edit_sub_sub_termin(
+    HashTable *map,
+    const char *term_name,
+    const char *sub_term_name,
+    const char *sub_sub_term_name,
+    const unsigned short *new_pages,
+    short new_pages_count
+) {
+    if (map == NULL || term_name == NULL || sub_term_name == NULL || sub_sub_term_name == NULL) return -1;
+    
+    unsigned int index = _hash_function(term_name, map->size);
+    Term *term = map->entries[index];
+    
+    while (term) {
+        if (strcmp(term->name, term_name) == 0) {
+            break;
+        }
+        term = term->next;
+    }
+    
+    if (term == NULL) {
+        printf("Error: term '%s' not found\n", term_name);
+        return -1;
+    }
+    
+    SubTerm *sub = term->sub_list;
+    while (sub) {
+        if (strcmp(sub->name, sub_term_name) == 0) {
+            break;
+        }
+        sub = sub->next;
+    }
+    
+    if (sub == NULL) {
+        printf("Error: subterm '%s' not found in term '%s'\n", sub_term_name, term_name);
+        return -1;
+    }
+    
+    SubSubTerm *subsub = sub->subsub_list;
+    while (subsub) {
+        if (strcmp(subsub->name, sub_sub_term_name) == 0) {
+            break;
+        }
+        subsub = subsub->next;
+    }
+    
+    if (subsub == NULL) {
+        printf("Error: subsubterm '%s' not found in subterm '%s'\n", sub_sub_term_name, sub_term_name);
+        return -1;
+    }
+    
+    if (subsub->pages) {
+        free(subsub->pages);
+    }
+    
+    subsub->pages = malloc(new_pages_count * sizeof(unsigned short));
+    if (subsub->pages == NULL) {
+        printf("Error: memory allocation failed\n");
+        subsub->pages = NULL;
+        subsub->pages_count = 0;
+        return -1;
+    }
+    
+    for (int i = 0; i < new_pages_count; i++) {
+        subsub->pages[i] = new_pages[i];
+    }
+    
+    subsub->pages_count = new_pages_count;
+    
+    printf("Subsubterm '%s' in subterm '%s' successfully edited\n", sub_sub_term_name, sub_term_name);
+    return 0;
+}
+
 static void free_subsub_list(SubSubTerm *head) {
     SubSubTerm *current = head;
     while (current) {

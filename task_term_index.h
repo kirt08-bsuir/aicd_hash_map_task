@@ -50,6 +50,28 @@ int hash_table_insert_sub_sub_term(
 );
 
 int hash_table_remove_term(HashTable *map, const char *name);
+
+int hash_table_edit_term(
+    HashTable *map,
+    const char *term_name,
+    const unsigned short *new_pages,
+    short new_pages_count
+);
+int hash_table_edit_sub_termin(
+    HashTable *map,
+    const char *term_name,
+    const char *sub_term_name,
+    const unsigned short *new_pages,
+    short new_pages_count
+);
+int hash_table_edit_sub_sub_termin(
+    HashTable *map,
+    const char *term_name,
+    const char *sub_term_name,
+    const char *sub_sub_term_name,
+    const unsigned short *new_pages,
+    short new_pages_count
+);
 void hash_table_show(HashTable *map);
 void hash_table_free(HashTable *map);
 
