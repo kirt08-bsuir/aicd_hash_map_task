@@ -33,6 +33,22 @@ typedef struct HashTable {
 
 HashTable *hash_table_create(int size);
 int hash_table_insert_term(HashTable *map, const char *name, const unsigned short *pages, short pages_count);
+int hash_table_insert_sub_term(
+    HashTable *map,
+    const char *term_name,
+    const char *name,
+    const unsigned short *pages,
+    short pages_count
+);
+int hash_table_insert_sub_sub_term(
+    HashTable *map,
+    const char *term_name,
+    const char *sub_term_name,
+    const char *name,
+    const unsigned short *pages,
+    short pages_count
+);
+
 int hash_table_remove_term(HashTable *map, const char *name);
 void hash_table_show(HashTable *map);
 void hash_table_free(HashTable *map);
