@@ -242,7 +242,7 @@ int hash_table_edit_term(
     return 0;
 }
 
-int hash_table_edit_sub_termin(
+int hash_table_edit_sub_term(
     HashTable *map,
     const char *term_name,
     const char *sub_term_name,
@@ -291,7 +291,7 @@ int hash_table_edit_sub_termin(
     return 0;
 }
 
-int hash_table_edit_sub_sub_termin(
+int hash_table_edit_sub_sub_term(
     HashTable *map,
     const char *term_name,
     const char *sub_term_name,
@@ -455,14 +455,14 @@ int hash_table_remove_sub_term(
             free(cur_sub_term->name);
             free(cur_sub_term->pages);
             free(cur_sub_term);
-            printf("Sub term with name '%s' was deleted", name);
+            printf("Sub term with name '%s' was deleted\n", name);
             return 0;
         }
         prev_sub_term = cur_sub_term;
         cur_sub_term = cur_sub_term->next;
     }
 
-    printf("Error: sub_term with name '%s' wasn't found", name);
+    printf("Error: sub_term with name '%s' wasn't found\n", name);
     return -1;
 }
 
@@ -508,19 +508,99 @@ int hash_table_remove_sub_sub_term(
                 cur_sub_term->subsub_list = cur_sub_sub_term->next;
             }
 
-            free_subsub_list(cur_sub_sub_term);
             free(cur_sub_sub_term->name);
             free(cur_sub_sub_term->pages);
             free(cur_sub_sub_term);
 
-            printf("Sub Sub term with name '%s' was deleted", name);
+            printf("Sub Sub term with name '%s' was deleted\n", name);
             return 0;
         }
         prev_sub_sub_term = cur_sub_sub_term;
         cur_sub_sub_term = cur_sub_sub_term->next;
     }
 
-    printf("Error: sub_sub_term with name '%s' wasn't found", name);
+    printf("Error: sub_sub_term with name '%s' wasn't found\n", name);
+    return -1;
+}
+
+int hash_table_find_term_by_sub_term(
+    HashTable *map,
+    const char *sub_term_name
+) {
+    if (map == NULL) return -1;
+    unsigned short found_count = 0;
+
+    for (int i = 0; i < map->size; i++) {
+        Term *cur_term = map->entries[i];
+        while (cur_term) {
+            SubTerm *cur_sub_term = cur_term->sub_list;
+            while (cur_sub_term) {
+                if (strcmp(cur_sub_term->name, sub_term_name) == 0) {
+                    printf("Term name: %s\nPages: ", cur_term->name);
+                    for (int ii = 0; ii < cur_term->pages_count - 2; ii++) printf("%d, ", cur_term->pages[ii]);
+                    printf("%d", cur_term->pages[cur_term->pages_count - 1]);
+                    printf("\n");
+
+                    printf("Sub Term name: %s\nPages: ", cur_sub_term->name);
+                    for (int ii = 0; ii < cur_term->pages_count - 1; ii++) printf("%d, ", cur_sub_term->pages[ii]);
+                    printf("%d", cur_sub_term->pages[cur_sub_term->pages_count - 1]);
+                    printf("\n");
+                    
+                    found_count++;
+                    break;
+                }
+                cur_sub_term = cur_sub_term->next;
+            }
+            cur_term=cur_term->next;
+        }
+    }
+    
+    if (found_count == 0) {
+        printf("Nothing was found");
+    } else {
+        printf("Number of found terms: %d", found_count);
+    }
+    return 0;
+}
+
+int hash_table_find_sub_term_by_term(
+    HashTable *map,
+    const char *term_name
+) {
+    if (map == NULL) return -1;
+
+    unsigned int index = _hash_function(term_name, map->size);
+    Term *cur_term = map->entries[index];
+
+    while (cur_term) {
+        if (strcmp(cur_term->name, term_name) == 0) {
+            printf("Term name: %s\nPages: ", cur_term->name);
+            for (int ii = 0; ii < cur_term->pages_count - 1; ii++) printf("%d, ", cur_term->pages[ii]);
+            printf("%d\n", cur_term->pages[cur_term->pages_count - 1]);
+
+            SubTerm *cur_sub_term = cur_term->sub_list;
+            while (cur_sub_term) {
+                printf("    Sub Term name: %s\n    Pages: ", cur_sub_term->name);
+                for (int ii = 0; ii < cur_sub_term->pages_count - 1; ii++) printf("%d, ", cur_sub_term->pages[ii]);
+                printf("%d\n", cur_sub_term->pages[cur_sub_term->pages_count - 1]);
+                
+                SubSubTerm *cur_subsub = cur_sub_term->subsub_list;
+                while (cur_subsub) {
+                    printf("        Sub Sub Term name: %s\n        Pages: ", cur_subsub->name);
+                    for (int ii = 0; ii < cur_subsub->pages_count - 1; ii++) printf("%d, ", cur_subsub->pages[ii]);
+                    printf("%d\n", cur_subsub->pages[cur_subsub->pages_count - 1]);
+                    
+                    cur_subsub = cur_subsub->next;
+                }
+                
+                cur_sub_term = cur_sub_term->next;
+            }
+            return 0;
+        }
+        cur_term = cur_term->next;
+    }
+
+    printf("Error: term '%s' not found\n", term_name);
     return -1;
 }
 
