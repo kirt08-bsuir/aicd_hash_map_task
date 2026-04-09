@@ -102,6 +102,15 @@ int hash_table_find_sub_term_by_term(
     const char *term_name
 );
 
+// SORT
+void sort_subterms_by_name(
+    HashTable *map,
+    const char *term_name
+);
+void sort_subterms_by_pages(
+    HashTable *map,
+    const char *term_name
+);
 
 void hash_table_show(HashTable *map);
 void hash_table_free(HashTable *map);

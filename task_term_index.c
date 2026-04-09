@@ -537,12 +537,12 @@ int hash_table_find_term_by_sub_term(
             while (cur_sub_term) {
                 if (strcmp(cur_sub_term->name, sub_term_name) == 0) {
                     printf("Term name: %s\nPages: ", cur_term->name);
-                    for (int ii = 0; ii < cur_term->pages_count - 2; ii++) printf("%d, ", cur_term->pages[ii]);
+                    for (int ii = 0; ii < cur_term->pages_count - 1; ii++) printf("%d, ", cur_term->pages[ii]);
                     printf("%d", cur_term->pages[cur_term->pages_count - 1]);
                     printf("\n");
 
                     printf("Sub Term name: %s\nPages: ", cur_sub_term->name);
-                    for (int ii = 0; ii < cur_term->pages_count - 1; ii++) printf("%d, ", cur_sub_term->pages[ii]);
+                    for (int ii = 0; ii < cur_sub_term->pages_count - 1; ii++) printf("%d, ", cur_sub_term->pages[ii]);
                     printf("%d", cur_sub_term->pages[cur_sub_term->pages_count - 1]);
                     printf("\n");
                     
@@ -602,6 +602,120 @@ int hash_table_find_sub_term_by_term(
 
     printf("Error: term '%s' not found\n", term_name);
     return -1;
+}
+
+void sort_subterms_by_name(
+    HashTable *map,
+    const char *term_name
+) {
+    if (map == NULL) return;
+
+    unsigned int index = _hash_function(term_name, map->size);
+    Term *term = map->entries[index];
+    while (term) {
+        if (strcmp(term->name, term_name) == 0) break;
+        term = term->next;
+    }
+    
+    if (term == NULL) {
+        printf("Error: term '%s' not found\n", term_name);
+        return;
+    }
+    
+    if (term->sub_list == NULL) return;
+
+    int count = 0;
+    SubTerm *cur = term->sub_list;
+    while (cur) {
+        count++;
+        cur = cur->next;
+    }
+    
+    if (count <= 1) return;
+    
+    SubTerm **arr = malloc(count * sizeof(SubTerm*));
+    cur = term->sub_list;
+    for (int i = 0; i < count; i++) {
+        arr[i] = cur;
+        cur = cur->next;
+    }
+    
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - i - 1; j++) {
+            if (strcmp(arr[j]->name, arr[j+1]->name) > 0) {
+                SubTerm *temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+        }
+    }
+    
+    term->sub_list = arr[0];
+    for (int i = 0; i < count - 1; i++) {
+        arr[i]->next = arr[i+1];
+    }
+    arr[count-1]->next = NULL;
+    
+    free(arr);
+    printf("Subterms of '%s' sorted by name\n", term->name);
+}
+
+void sort_subterms_by_pages(
+    HashTable *map,
+    const char *term_name
+) {
+    if (map == NULL) return;
+
+    unsigned int index = _hash_function(term_name, map->size);
+    Term *term = map->entries[index];
+    while (term) {
+        if (strcmp(term->name, term_name) == 0) break;
+        term = term->next;
+    }
+    
+    if (term == NULL) {
+        printf("Error: term '%s' not found\n", term_name);
+        return;
+    }
+    
+    if (term->sub_list == NULL) return;
+    
+    int count = 0;
+    SubTerm *cur = term->sub_list;
+    while (cur) {
+        count++;
+        cur = cur->next;
+    }
+    
+    if (count <= 1) return;
+    
+    SubTerm **arr = malloc(count * sizeof(SubTerm*));
+    cur = term->sub_list;
+    for (int i = 0; i < count; i++) {
+        arr[i] = cur;
+        cur = cur->next;
+    }
+    
+    for (int i = 0; i < count - 1; i++) {
+        for (int j = 0; j < count - i - 1; j++) {
+            int page1 = (arr[j]->pages_count > 0) ? arr[j]->pages[0] : 0;
+            int page2 = (arr[j+1]->pages_count > 0) ? arr[j+1]->pages[0] : 0;
+            if (page1 > page2) {
+                SubTerm *temp = arr[j];
+                arr[j] = arr[j+1];
+                arr[j+1] = temp;
+            }
+        }
+    }
+    
+    term->sub_list = arr[0];
+    for (int i = 0; i < count - 1; i++) {
+        arr[i]->next = arr[i+1];
+    }
+    arr[count-1]->next = NULL;
+    
+    free(arr);
+    printf("Subterms of '%s' sorted by first page\n", term->name);
 }
 
 void hash_table_show(HashTable *map) {
