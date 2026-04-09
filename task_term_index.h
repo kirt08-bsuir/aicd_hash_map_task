@@ -50,6 +50,17 @@ int hash_table_insert_sub_sub_term(
 );
 
 int hash_table_remove_term(HashTable *map, const char *name);
+int hash_table_remove_sub_term(
+    HashTable *map,
+    const char *term_name,
+    const char *name
+);
+int hash_table_remove_sub_sub_term(
+    HashTable *map,
+    const char *term_name,
+    const char *sub_term_name,
+    const char *name
+);
 
 int hash_table_edit_term(
     HashTable *map,

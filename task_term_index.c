@@ -419,6 +419,111 @@ int hash_table_remove_term(HashTable *map, const char *name) {
     return -1;
 }
 
+int hash_table_remove_sub_term(
+    HashTable *map,
+    const char *term_name,
+    const char *name
+) {
+    if (map == NULL) return -1;
+
+    unsigned int index = _hash_function(term_name, map->size);
+
+    Term *term = map->entries[index];
+    while (term) {
+        if (strcmp(term->name, term_name) == 0) break;
+        term = term->next;
+    }
+
+    if (term == NULL) {
+        printf("Error: term '%s' not found\n", term_name);
+        return -1;
+    }
+
+    SubTerm *cur_sub_term = term->sub_list;
+    SubTerm *prev_sub_term = NULL;
+
+    while (cur_sub_term) {
+        if (strcmp(cur_sub_term->name, name) == 0) {
+            if (prev_sub_term) {
+                prev_sub_term->next = cur_sub_term->next;
+            } else {
+                term->sub_list = cur_sub_term->next;
+            }
+
+            free_subsub_list(cur_sub_term->subsub_list);
+
+            free(cur_sub_term->name);
+            free(cur_sub_term->pages);
+            free(cur_sub_term);
+            printf("Sub term with name '%s' was deleted", name);
+            return 0;
+        }
+        prev_sub_term = cur_sub_term;
+        cur_sub_term = cur_sub_term->next;
+    }
+
+    printf("Error: sub_term with name '%s' wasn't found", name);
+    return -1;
+}
+
+int hash_table_remove_sub_sub_term(
+    HashTable *map,
+    const char *term_name,
+    const char *sub_term_name,
+    const char *name
+) {
+    if (map == NULL) return -1;
+
+    unsigned int index = _hash_function(term_name, map->size);
+
+    Term *cur_term = map->entries[index];
+    while (cur_term) {
+        if (strcmp(cur_term->name, term_name) == 0) break;
+        cur_term = cur_term->next;
+    }
+
+    if (cur_term == NULL) {
+        printf("Error: term '%s' wasn't found\n", term_name);
+        return -1;
+    }
+
+    SubTerm *cur_sub_term = cur_term->sub_list;
+    while (cur_sub_term) {
+        if (strcmp(cur_sub_term->name, sub_term_name) == 0) break;
+        cur_sub_term = cur_sub_term->next;
+    }
+
+    if (cur_sub_term == NULL) {
+        printf("Error: sub term '%s' wasn't found\n", sub_term_name);
+        return -1;
+    }
+
+    SubSubTerm *cur_sub_sub_term = cur_sub_term->subsub_list;
+    SubSubTerm *prev_sub_sub_term = NULL;
+    while (cur_sub_sub_term) {
+        if (strcmp(cur_sub_sub_term->name, name) == 0) {
+            if (prev_sub_sub_term) {
+                prev_sub_sub_term->next = cur_sub_sub_term->next;
+            } else {
+                cur_sub_term->subsub_list = cur_sub_sub_term->next;
+            }
+
+            free_subsub_list(cur_sub_sub_term);
+            free(cur_sub_sub_term->name);
+            free(cur_sub_sub_term->pages);
+            free(cur_sub_sub_term);
+
+            printf("Sub Sub term with name '%s' was deleted", name);
+            return 0;
+        }
+        prev_sub_sub_term = cur_sub_sub_term;
+        cur_sub_sub_term = cur_sub_sub_term->next;
+    }
+
+    printf("Error: sub_sub_term with name '%s' wasn't found", name);
+    return -1;
+}
+
 void hash_table_show(HashTable *map) {
     if (!map) {
         printf("Hash table not initialized\n");
