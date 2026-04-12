@@ -732,69 +732,52 @@ void hash_table_show(HashTable *map) {
     int sub_count = 0;
     int subsub_count = 0;
     
-    Term **all_terms = malloc(map->size * sizeof(Term*));
-    int total_terms = 0;
-    
     for (int i = 0; i < map->size; i++) {
         Term *cur = map->entries[i];
         while (cur) {
-            all_terms[total_terms++] = cur;
-            cur = cur->next;
-        }
-    }
-    
-    for (int i = 0; i < total_terms - 1; i++) {
-        for (int j = 0; j < total_terms - i - 1; j++) {
-            if (strcmp(all_terms[j]->name, all_terms[j+1]->name) > 0) {
-                Term *temp = all_terms[j];
-                all_terms[j] = all_terms[j+1];
-                all_terms[j+1] = temp;
-            }
-        }
-    }
-    
-    for (int i = 0; i < total_terms; i++) {
-        Term *term = all_terms[i];
-        term_count++;
-        
-        printf("\n[%d] TERM: %s", term_count, term->name);
-        printf(" [pages: ");
-        for (int j = 0; j < term->pages_count; j++) {
-            printf("%d", term->pages[j]);
-            if (j < term->pages_count - 1) printf(", ");
-        }
-        printf("]\n");
-        
-        SubTerm *sub = term->sub_list;
-        int sub_idx = 0;
-        while (sub) {
-            sub_count++;
-            sub_idx++;
-            printf("    %d.%d SUBTERM: %s", term_count, sub_idx, sub->name);
+            term_count++;
+            
+            printf("\n[%d] TERM: %s", term_count, cur->name);
             printf(" [pages: ");
-            for (int j = 0; j < sub->pages_count; j++) {
-                printf("%d", sub->pages[j]);
-                if (j < sub->pages_count - 1) printf(", ");
+            for (int j = 0; j < cur->pages_count; j++) {
+                printf("%d", cur->pages[j]);
+                if (j < cur->pages_count - 1) printf(", ");
             }
             printf("]\n");
             
-            SubSubTerm *subsub = sub->subsub_list;
-            int subsub_idx = 0;
-            while (subsub) {
-                subsub_count++;
-                subsub_idx++;
-                printf("        %d.%d.%d SUBSUBTERM: %s", term_count, sub_idx, subsub_idx, subsub->name);
+            SubTerm *sub = cur->sub_list;
+            int sub_idx = 0;
+            while (sub) {
+                sub_count++;
+                sub_idx++;
+                printf("    %d.%d SUBTERM: %s", term_count, sub_idx, sub->name);
                 printf(" [pages: ");
-                for (int j = 0; j < subsub->pages_count; j++) {
-                    printf("%d", subsub->pages[j]);
-                    if (j < subsub->pages_count - 1) printf(", ");
+                for (int j = 0; j < sub->pages_count; j++) {
+                    printf("%d", sub->pages[j]);
+                    if (j < sub->pages_count - 1) printf(", ");
                 }
                 printf("]\n");
                 
-                subsub = subsub->next;
+                SubSubTerm *subsub = sub->subsub_list;
+                int subsub_idx = 0;
+                while (subsub) {
+                    subsub_count++;
+                    subsub_idx++;
+                    printf("        %d.%d.%d SUBSUBTERM: %s", term_count, sub_idx, subsub_idx, subsub->name);
+                    printf(" [pages: ");
+                    for (int j = 0; j < subsub->pages_count; j++) {
+                        printf("%d", subsub->pages[j]);
+                        if (j < subsub->pages_count - 1) printf(", ");
+                    }
+                    printf("]\n");
+                    
+                    subsub = subsub->next;
+                }
+                
+                sub = sub->next;
             }
             
-            sub = sub->next;
+            cur = cur->next;
         }
     }
     
@@ -804,8 +787,6 @@ void hash_table_show(HashTable *map) {
     printf("  Subterms: %d\n", sub_count);
     printf("  Subsubterms: %d\n", subsub_count);
     printf("========================================\n");
-    
-    free(all_terms);
 }
 
 void hash_table_free(HashTable *map) {
